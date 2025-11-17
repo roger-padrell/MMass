@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>MMass</title>
+</head>
+<body>
+    <input id="formulaInput" type="text" placeholder="ex. H2O" value="">
+	<input id="precision" oninput="calculate()" type="range" value="2" min="0" max="10" step="1">
+
+    <p id="result"></p>
+<script>
+// enter event
+document.getElementById("formulaInput").onkeyup = function(e){
+	try{
+		calculate()
+	}
+	catch(e){}
+}
+// -----------------------------------------------------------
+// FULL PERIODIC TABLE (ATOMIC MASSES, g/mol) – editable
+// -----------------------------------------------------------
+const ATOMIC_MASS = {
+    H: 1, He: 4.0,
+    Li: 6.9, Be: 9.0, B: 10.8, C: 12.0, N: 14.0, O: 16.0, F: 19.0, Ne: 20.2,
+    Na: 23.0, Mg: 24.3, Al: 27.0, Si: 28.1, P: 31.0, S: 32.1, Cl: 35.5, Ar: 39.9,
+    K: 39.1, Ca: 40.1, Sc: 45.0, Ti: 47.9, V: 50.9, Cr: 52.0, Mn: 54.9, Fe: 55.8,
+    Co: 58.9, Ni: 58.7, Cu: 63.5, Zn: 65.4, Ga: 69.7, Ge: 72.6, As: 74.9, Se: 79.0,
+    Br: 79.9, Kr: 83.8,
+    Rb: 85.5, Sr: 87.6, Y: 88.9, Zr: 91.2, Nb: 92.9, Mo: 95.9, Tc: 98,
+    Ru: 101.1, Rh: 102.9, Pd: 106.4, Ag: 107.9, Cd: 112.4, In: 114.8, Sn: 118.7,
+    Sb: 121.7, Te: 127.6, I: 126.9, Xe: 131.3,
+    Cs: 132.9, Ba: 137.3, La: 138.9,
+    Ce: 140.1, Pr: 140.9, Nd: 144.2, Pm: 145, Sm: 150.4, Eu: 152.0, Gd: 157.2,
+    Tb: 158.9, Dy: 162.5, Ho: 164.9, Er: 167.3, Tm: 168.9, Yb: 173.0, Lu: 175.0,
+    Hf: 178.5, Ta: 180.9, W: 183.8, Re: 186.2, Os: 190.2, Ir: 192.2,
+    Pt: 195.1, Au: 197.0, Hg: 200.6, Tl: 204.4, Pb: 207.2, Bi: 209.0,
+    Po: 209, At: 210, Rn: 222, Fr: 223, Ra: 226,
+    Ac: 227, Th: 232.0, Pa: 231.0, U: 238.0, Np: 237, Pu: 244, Am: 243,
+    Cm: 247, Bk: 247, Cf: 251, Es: 252, Fm: 257, Md: 258, No: 259, Lr: 262,
+    Rf: 267, Db: 270, Sg: 271, Bh: 270, Hs: 277, Mt: 278,
+    Ds: 281, Rg: 282, Cn: 285, Nh: 286, Fl: 289, Mc: 290, Lv: 293,
+    Ts: 294, Og: 294
+};
+
+
+// -----------------------------------------------------------
+// FORMULA PARSER (supports parentheses + nested parentheses)
+// -----------------------------------------------------------
+function parseFormula(formula) {
+    let stack = [{}];
+    let i = 0;
+
+    while (i < formula.length) {
+
+        // Opening parenthesis → push new level
+        if (formula[i] === "(") {
+            stack.push({});
+            i++;
+            continue;
+        }
+
+        // Closing parenthesis → pop and apply multiplier
+        if (formula[i] === ")") {
+            i++;
+            let num = "";
+
+            // Read multiplier after parenthesis
+            while (i < formula.length && /[0-9]/.test(formula[i])) {
+                num += formula[i++];
+            }
+            let mul = num === "" ? 1 : parseInt(num);
+
+            let group = stack.pop();
+            let top = stack[stack.length - 1];
+
+            for (let el in group) {
+                if (!top[el]) top[el] = 0;
+                top[el] += group[el] * mul;
+            }
+            continue;
+        }
+
+        // Element symbol (capital + optional lowercase)
+        if (/[A-Z]/.test(formula[i])) {
+            let element = formula[i++];
+            if (i < formula.length && /[a-z]/.test(formula[i])) {
+                element += formula[i++];
+            }
+
+            // Read number after element
+            let num = "";
+            while (i < formula.length && /[0-9]/.test(formula[i])) {
+                num += formula[i++];
+            }
+            let count = num === "" ? 1 : parseInt(num);
+
+            if (!ATOMIC_MASS[element])
+                throw new Error("Unknown element: " + element);
+
+            let top = stack[stack.length - 1];
+            if (!top[element]) top[element] = 0;
+            top[element] += count;
+
+            continue;
+        }
+
+        throw new Error("Invalid character: " + formula[i]);
+    }
+
+    return stack.pop();
+}
+
+// -----------------------------------------------------------
+// CALCULATION
+// -----------------------------------------------------------
+function calculate() {
+    const input = document.getElementById("formulaInput").value.trim();
+    const result = document.getElementById("result");
+
+    if (input === "") {
+        result.textContent = "Please enter a formula.";
+        return;
+    }
+
+    try {
+        const parsed = parseFormula(input);
+        let total = 0;
+
+        for (let element in parsed) {
+            total += ATOMIC_MASS[element] * parsed[element];
+        }
+
+        result.textContent = 
+            "Molar mass of " + input + " = " + total.toFixed(document.getElementById("precision").valueAsNumber) + " g/mol";
+    }
+    catch (err) {
+        result.textContent = "Error: " + err.message;
+    }
+}
+</script>
+
+</body>
+</html>
+
