@@ -3,20 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <title>MMass</title>
+	<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <input id="formulaInput" type="text" placeholder="ex. H2O" value="">
-	<input id="precision" oninput="calculate()" type="range" value="2" min="0" max="10" step="1">
-
+	<p id="sinput"><g>ex. H<sub>2</sub>O</g></p>
+	<input id="precision" oninput="run()" type="range" value="2" min="0" max="10" step="1">
     <p id="result"></p>
 <script>
-// enter event
-document.getElementById("formulaInput").onkeyup = function(e){
-	try{
-		calculate()
-	}
-	catch(e){}
-}
 // -----------------------------------------------------------
 // FULL PERIODIC TABLE (ATOMIC MASSES, g/mol) – editable
 // -----------------------------------------------------------
@@ -114,32 +107,67 @@ function parseFormula(formula) {
 // -----------------------------------------------------------
 // CALCULATION
 // -----------------------------------------------------------
-function calculate() {
-    const input = document.getElementById("formulaInput").value.trim();
-    const result = document.getElementById("result");
-
+function calculate(input) {
     if (input === "") {
-        result.textContent = "Please enter a formula.";
-        return;
+        return "Start typing to enter a formula.";
+    }
+    const parsed = parseFormula(input);
+    let total = 0;
+
+    for (let element in parsed) {
+        total += ATOMIC_MASS[element] * parsed[element];
     }
 
-    try {
-        const parsed = parseFormula(input);
-        let total = 0;
-
-        for (let element in parsed) {
-            total += ATOMIC_MASS[element] * parsed[element];
-        }
-
-        result.textContent = 
-            "Molar mass of " + input + " = " + total.toFixed(document.getElementById("precision").valueAsNumber) + " g/mol";
-    }
-    catch (err) {
-        result.textContent = "Error: " + err.message;
-    }
+    return "Molar mass of " + input + " = " + total.toFixed(document.getElementById("precision").valueAsNumber) + " g/mol";
 }
 </script>
+<script>
+// enter event
+document.body.onkeyup = function(e){
+	try{
+		if("ABCDEFGHIKLMNOPRSTUVWXYZabcdefghiklmnoprstuvwxyz1234567890".includes(e.key)){
+			value += e.key;
+		}
+		else if(e.key == "Backspace" && value.length != 0){
+			value = value.slice(0,value.length-1)
+		}
+		run()
+		update_sinput(value)
+	}
+	catch(e){}
+}
 
+function run(){
+    const result = document.getElementById("result");
+	try{
+		result.textContent = calculate(value);
+	}
+	catch (err){
+		result.textContent = "Error: " + err.message;
+	}
+}
+
+const sinput = document.getElementById("sinput");
+function update_sinput(cont){
+	sinput.innerHTML = "";
+	for(let char in cont){
+		let c = cont[char];
+		if("ABDCEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".includes(c)){
+			sinput.innerHTML += c;
+		}
+		else if("1234567890".includes(c)){
+			sinput.innerHTML += "<sub>"+c+"</sub>"
+		}
+	}
+	if(sinput.innerHTML == ""){
+		sinput.innerHTML = "<g>ex. H<sub>2</sub>O</g>";
+	}
+}
+
+let value = "";
+document.getElementById("precision").value = "2";
+run()
+</script>
 </body>
 </html>
 

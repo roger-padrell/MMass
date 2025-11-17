@@ -1,0 +1,32 @@
+:root{
+	--bg-color: black;
+	--text-color: white;
+	--gray-color: gray;
+}
+
+body, html{
+	height: 100%;
+	width: 100%;
+	margin: 0px;
+	overflow: hidden;
+	padding: 0px;
+	background-color: var(--bg-color);
+	color: var(--text-color);
+}
+
+body{
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+#sinput{
+	width: max-content;
+	height: 2rem;
+	font-size: 2rem;
+}
+
+g{
+	color: var(--gray-color);
+}
