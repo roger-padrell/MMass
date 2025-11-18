@@ -125,7 +125,7 @@ function calculate(input) {
 // enter event
 document.body.onkeyup = function(e){
 	try{
-		if("ABCDEFGHIKLMNOPRSTUVWXYZabcdefghiklmnoprstuvwxyz1234567890".includes(e.key)){
+		if("()ABCDEFGHIKLMNOPRSTUVWXYZabcdefghiklmnoprstuvwxyz1234567890".includes(e.key)){
 			value += e.key;
 		}
 		else if(e.key == "Backspace" && value.length != 0){
@@ -152,7 +152,7 @@ function update_sinput(cont){
 	sinput.innerHTML = "";
 	for(let char in cont){
 		let c = cont[char];
-		if("ABDCEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".includes(c)){
+		if("()ABDCEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".includes(c)){
 			sinput.innerHTML += c;
 		}
 		else if("1234567890".includes(c)){
